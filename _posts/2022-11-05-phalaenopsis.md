@@ -13,7 +13,13 @@ layout: post
 
 换盆
 
+板植：葡萄牙软木树皮
+
 [病虫害]({{ site.baseurl }}{% link _posts/phal/2022-11-05-pests-diseases.md %})
+
+[常见尺寸和花盆选择]({{ site.baseurl }}{% link _posts/phal/2022-11-19-flowerpot.md %})
+
+[无土栽培技术](https://www.bilibili.com/video/BV1cx411z7ry/?spm_id_from=333.337.search-card.all.click&vd_source=6e4a298c0fc9aaa87778d006c063c38a)
 
 
 
