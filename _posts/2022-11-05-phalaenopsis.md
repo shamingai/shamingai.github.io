@@ -21,7 +21,7 @@ layout: post
 
 [无土栽培技术](https://www.bilibili.com/video/BV1cx411z7ry/?spm_id_from=333.337.search-card.all.click&vd_source=6e4a298c0fc9aaa87778d006c063c38a)
 
-
+[我的蝴蝶兰品种一览表]({{ site.baseurl }}{% link _posts/phal/2023-07-03-phal-mine.md %})
 
 #### 1、光
 
