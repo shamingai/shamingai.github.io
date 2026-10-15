@@ -22,7 +22,7 @@ onMounted(async () => {
 <template>
   <section class="hero">
     <div>
-      <p>卷又卷不起，躺又躺不平</p>
+      <p>不得不亏，得之血赚</p>
     </div>
   </section>
   <main class="page">
