@@ -7,6 +7,8 @@ import TagPage from "./pages/TagPage.vue";
 import SearchPage from "./pages/SearchPage.vue";
 import AboutPage from "./pages/AboutPage.vue";
 import HistoryPage from "./pages/HistoryPage.vue";
+import DigestsPage from "./pages/DigestsPage.vue";
+import DigestPage from "./pages/DigestPage.vue";
 
 export const router = createRouter({
   history: createWebHashHistory(),
@@ -20,6 +22,8 @@ export const router = createRouter({
     { path: "/tags/:name", component: TagPage },
     { path: "/search", component: SearchPage },
     { path: "/about", component: AboutPage },
-    { path: "/history", component: HistoryPage }
+    { path: "/history", component: HistoryPage },
+    { path: "/digests", component: DigestsPage },
+    { path: "/digests/:date", component: DigestPage }
   ]
 });

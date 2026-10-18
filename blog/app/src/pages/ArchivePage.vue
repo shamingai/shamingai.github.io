@@ -1,9 +1,11 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import Pager from "../components/Pager.vue";
-import { currentPage, pageCount, pageItems } from "../services/paging.js";
-import { loadSite } from "../services/site.js";
+import ResourceState from "../components/ResourceState.vue";
+import { api } from "../services/api.js";
+import { useListing } from "../services/paging.js";
+import { useResource } from "../services/useResource.js";
 
 const props = defineProps({
   total: { type: Number, default: null },
@@ -12,31 +14,38 @@ const props = defineProps({
   years: { type: Array, default: null }
 });
 const route = useRoute() ?? { query: {} };
-const total = ref(props.total ?? 0);
-const years = ref(props.years ?? []);
-const ordered = computed(() => years.value.flatMap((year) => year.articles.map((article) => ({ ...article, year: year.name }))));
-const page = computed(() => currentPage(props.pageCount ? props.page : route.query.page, ordered.value.length));
-const visible = computed(() => pageItems(ordered.value, page.value));
+const injected = ref(props.years !== null);
+const resource = useResource(() => api.archive(route.query));
+if (injected.value) resource.disable();
 
-onMounted(async () => {
-  if (props.years) return;
-  const archive = (await loadSite()).archive;
-  total.value = archive.total;
-  pageCount.value = archive.pageCount;
-  years.value = archive.years;
+const withYear = (article, year) => ({ ...article, year });
+const items = computed(() =>
+  injected.value
+    ? props.years.flatMap((year) => year.articles.map((article) => withYear(article, year.name)))
+    : (resource.data.value?.items ?? []).map((article) => withYear(article, article.published_on.slice(0, 4)))
+);
+const total = computed(() => props.total ?? resource.data.value?.total ?? 0);
+const { page, count, visible } = useListing(route, {
+  injected,
+  data: resource.data,
+  items,
+  injectedPage: computed(() => (props.pageCount ? props.page : route.query.page))
 });
 </script>
 
 <template>
   <main class="page">
     <h1>归档</h1>
-    <p>共有 {{ total }} 篇</p>
-    <ul class="list">
-      <li v-for="article in visible" :key="article.id" class="panel">
-        <p class="meta">{{ article.year }}</p>
-        <RouterLink :to="`/articles/${article.id}`">{{ article.title }}</RouterLink>
-      </li>
-    </ul>
-    <Pager :page="page" :page-count="pageCount(ordered.length)" />
+    <ResourceState :state="resource.state.value" :error="resource.error.value" @retry="resource.reload" />
+    <template v-if="resource.state.value === 'ready'">
+      <p>共有 {{ total }} 篇</p>
+      <ul class="list">
+        <li v-for="article in visible" :key="article.slug ?? article.id" class="panel">
+          <p class="meta">{{ article.year }}</p>
+          <RouterLink :to="`/articles/${article.slug ?? article.id}`">{{ article.title }}</RouterLink>
+        </li>
+      </ul>
+      <Pager :page="page" :page-count="count" />
+    </template>
   </main>
 </template>

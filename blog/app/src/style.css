@@ -106,3 +106,5 @@ button { border: 0; border-radius: 0.35rem; padding: 0.65rem 1rem; background: #
   .reading > h1,
   .prose h2 { scroll-margin-top: 8rem; }
 }
+.reason { padding: 0.5rem 0.75rem; border-left: 3px solid #9a3412; background: #fbf5f1; }
+.card h2 a:hover { color: #9a3412; }
