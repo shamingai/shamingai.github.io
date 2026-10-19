@@ -7,5 +7,10 @@ export const RouterLinkStub = defineComponent({
 });
 
 export function mountPage(component, props) {
-  return mount(component, { props: props.props ?? props, global: { components: { RouterLink: RouterLinkStub } } });
+  const { attachTo, ...rest } = props;
+  return mount(component, {
+    props: rest.props ?? rest,
+    attachTo,
+    global: { components: { RouterLink: RouterLinkStub } }
+  });
 }

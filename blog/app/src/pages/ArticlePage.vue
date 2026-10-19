@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import ResourceState from "../components/ResourceState.vue";
 import { api } from "../services/api.js";
@@ -28,9 +28,33 @@ function notFoundAsNull(error) {
 const article = computed(() => (injected ? props.article : resource.data.value));
 const blocks = computed(() => contentBlocks(article.value?.body));
 
+// 与后端 headingsOf 同一规则（见 shamingai.github.io.server src/services/sync.js）。
+function anchorOf(text) {
+  return (
+    String(text ?? "")
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
+      .replace(/^-+|-+$/g, "") || "section"
+  );
+}
+
+// 目录链接渲染成 "#/articles/x#anchor"：路由仍由 hash 的第一段决定，点击交给 jumpTo 处理。
+function tocHref(anchor) {
+  return `#${route.fullPath ?? ""}#${anchor}`;
+}
+
+function jumpTo(event, anchor) {
+  event.preventDefault();
+  const target = document.getElementById(anchor);
+  if (!target) return;
+  target.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  window.history?.replaceState?.(null, "", `${route.fullPath ?? ""}#${anchor}`);
+}
+
 function contentBlocks(body) {
   const result = [];
   let paragraph = [];
+  const used = new Map();
   const flush = () => {
     if (!paragraph.length) return;
     result.push({ type: "paragraph", text: paragraph.join("") });
@@ -40,7 +64,10 @@ function contentBlocks(body) {
     const heading = /^(#{2,6})\s+(\S.*?)\s*$/.exec(line);
     if (heading) {
       flush();
-      result.push({ type: "heading", level: heading[1].length, text: heading[2] });
+      const base = anchorOf(heading[2]);
+      const count = used.get(base) ?? 0;
+      used.set(base, count + 1);
+      result.push({ type: "heading", level: heading[1].length, text: heading[2], anchor: count ? `${base}-${count + 1}` : base });
     } else if (line.trim()) {
       paragraph.push(line.trim());
     } else {
@@ -51,17 +78,25 @@ function contentBlocks(body) {
   return result;
 }
 
+let observer = null;
 onMounted(() => {
   if (typeof IntersectionObserver === "undefined") return;
-  const observer = new IntersectionObserver((entries) => {
+  observer = new IntersectionObserver((entries) => {
     const visible = entries.find((entry) => entry.isIntersecting);
-    if (visible) activeHeading.value = visible.target.id;
+    const heading = visible && article.value?.headings?.find((item) => item.anchor === visible.target.id);
+    if (heading) activeHeading.value = heading.anchor;
   }, { rootMargin: "-20% 0px -70% 0px" });
   watch(article, async () => {
     await nextTick();
+    if (!observer) return;
     observer.disconnect();
     document.querySelectorAll(".prose h2, .prose h3").forEach((heading) => observer.observe(heading));
   }, { immediate: true });
+});
+
+onBeforeUnmount(() => {
+  observer?.disconnect();
+  observer = null;
 });
 </script>
 
@@ -81,7 +116,7 @@ onMounted(() => {
         <main class="article-layout">
           <article class="prose panel">
             <template v-for="(block, index) in blocks" :key="index">
-              <component :is="`h${block.level}`" v-if="block.type === 'heading'" :id="block.text">{{ block.text }}</component>
+              <component :is="`h${block.level}`" v-if="block.type === 'heading'" :id="block.anchor">{{ block.text }}</component>
               <p v-else>{{ block.text }}</p>
             </template>
             <p class="tags">
@@ -94,8 +129,9 @@ onMounted(() => {
             <a
               v-for="heading in article.headings"
               :key="heading.anchor"
-              :href="`#${heading.anchor}`"
-              :class="[`level-${heading.level}`, { active: activeHeading === heading.text }]"
+              :href="tocHref(heading.anchor)"
+              :class="[`level-${heading.level}`, { active: activeHeading === heading.anchor }]"
+              @click="jumpTo($event, heading.anchor)"
             >{{ heading.text }}</a>
           </aside>
           <nav class="neighbors">

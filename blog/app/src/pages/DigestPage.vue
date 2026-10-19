@@ -10,8 +10,13 @@ const props = defineProps({
 });
 const route = useRoute() ?? { params: {} };
 const injected = ref(props.digest !== null);
-const resource = useResource(() => api.digest(route.params.date));
+const resource = useResource(() => api.digest(route.params.date).catch(notFoundAsNull));
 if (injected.value) resource.disable();
+
+function notFoundAsNull(error) {
+  if (error?.status === 404) return null;
+  throw error;
+}
 
 const digest = computed(() => (injected.value ? props.digest : resource.data.value));
 const items = computed(() => digest.value?.items ?? []);

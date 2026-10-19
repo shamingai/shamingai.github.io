@@ -4,7 +4,7 @@ import { useRoute } from "vue-router";
 import Pager from "../components/Pager.vue";
 import ResourceState from "../components/ResourceState.vue";
 import { api } from "../services/api.js";
-import { useListing } from "../services/paging.js";
+import { useListing, useReloadOnQuery } from "../services/paging.js";
 import { useResource } from "../services/useResource.js";
 
 const props = defineProps({
@@ -17,6 +17,7 @@ const route = useRoute() ?? { query: {} };
 const injected = ref(props.digests !== null);
 const resource = useResource(() => api.digests(route.query));
 if (injected.value) resource.disable();
+useReloadOnQuery(route, resource, ["page"]);
 
 const digests = computed(() => (injected.value ? props.digests : resource.data.value?.items ?? []));
 const total = computed(() => props.total ?? resource.data.value?.total ?? digests.value.length);

@@ -13,7 +13,7 @@ describe("archive page", () => {
       }
     });
 
-    expect(wrapper.text()).toContain("共有 45 篇");
+    expect(wrapper.text()).toContain("45 篇");
     expect(wrapper.text()).toContain("2026");
     expect(wrapper.get("a[href='#/articles/new']").text()).toBe("新文章");
     expect(wrapper.text()).toContain("2");

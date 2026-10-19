@@ -1,5 +1,6 @@
+import { PAGE_SIZE } from "./paging.js";
+
 const BASE_URL = (import.meta.env?.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
-const PAGE_SIZE = 10;
 
 export class ApiError extends Error {
   constructor(message, status) {

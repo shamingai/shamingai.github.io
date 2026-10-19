@@ -19,6 +19,7 @@ export function useResource(load) {
       state.value = "ready";
     } catch (cause) {
       if (ticket !== latest) return;
+      data.value = null;
       error.value = cause?.message || "加载失败";
       state.value = "error";
     }

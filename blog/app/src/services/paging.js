@@ -6,9 +6,22 @@ export function pageCount(total, size = PAGE_SIZE) {
   return Math.max(1, Math.ceil(total / Math.max(1, size)));
 }
 
-export function pageItems(items, page) {
-  const start = (page - 1) * PAGE_SIZE;
-  return items.slice(start, start + PAGE_SIZE);
+export function pageItems(items, page, size = PAGE_SIZE) {
+  const step = Math.max(1, size);
+  const start = (page - 1) * step;
+  return items.slice(start, start + step);
+}
+
+// 首页按日期分组：同一天的资讯和文章都留在同一组里，日期降序。
+export function groupByDate(items) {
+  const groups = [];
+  for (const item of items) {
+    const date = item.published_on ?? item.publishedOn ?? "";
+    const last = groups[groups.length - 1];
+    if (last && last.date === date) last.items.push(item);
+    else groups.push({ date, items: [item] });
+  }
+  return groups;
 }
 
 export function currentPage(value, total) {
@@ -27,9 +40,10 @@ export function useListing(route, { injected, data, items, injectedPage }) {
       return { page, count: pageCount(items.value.length), visible: pageItems(items.value, page) };
     }
     const page = Number(route.query?.page) || data.value?.page || 1;
+    const size = data.value?.page_size ?? PAGE_SIZE;
     return {
       page,
-      count: pageCount(data.value?.total ?? 0, data.value?.page_size ?? PAGE_SIZE),
+      count: data.value?.page_count ?? pageCount(data.value?.total ?? 0, size),
       visible: items.value
     };
   });
