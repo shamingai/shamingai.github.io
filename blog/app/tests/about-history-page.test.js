@@ -11,6 +11,12 @@ describe("about and history", () => {
     expect(wrapper.find("a[href^='/articles/']").exists()).toBe(false);
   });
 
+  test("splits the about text into paragraphs on line breaks", () => {
+    const wrapper = mount(AboutPage, { props: { text: "我是作者。\n\n资讯用Spec kit生成。" } });
+
+    expect(wrapper.findAll("p").map((p) => p.text())).toEqual(["我是作者。", "资讯用Spec kit生成。"]);
+  });
+
   test("shows an empty about page without pretending it is an archive", () => {
     const wrapper = mount(AboutPage, { props: { text: "" } });
 

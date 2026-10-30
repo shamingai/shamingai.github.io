@@ -59,6 +59,8 @@ button, input { font: inherit; }
   box-shadow: 0 0.5rem 1.5rem rgba(47, 65, 84, 0.08);
 }
 .card h2, .card h3, .panel h2 { margin: 0 0 0.5rem; font-size: 1.35rem; }
+.panel p { margin: 0 0 0.75rem; text-indent: 0; }
+.panel p:last-child { margin-bottom: 0; }
 .card:hover, .panel:hover { transform: translateY(-2px); }
 .days { display: grid; gap: 1.5rem; }
 .day-title { margin: 0 0 0.75rem; color: #6c7a89; font-size: 0.95rem; font-weight: 600; letter-spacing: 0.02em; }

@@ -11,6 +11,9 @@ const injected = props.text !== null;
 const resource = useResource(() => api.about().then((data) => data.about).catch(emptyOn404));
 if (injected) resource.disable();
 const text = computed(() => (injected ? props.text : resource.data.value ?? ""));
+const paragraphs = computed(() =>
+  text.value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+);
 
 function emptyOn404(error) {
   if (error?.status === 404) return "";
@@ -23,7 +26,9 @@ function emptyOn404(error) {
     <h1>关于</h1>
     <ResourceState :state="resource.state.value" :error="resource.error.value" @retry="resource.reload" />
     <template v-if="resource.state.value === 'ready'">
-      <p v-if="text.trim()">{{ text }}</p>
+      <template v-if="paragraphs.length">
+        <p v-for="(line, index) in paragraphs" :key="index">{{ line }}</p>
+      </template>
       <p v-else>暂时没有内容</p>
     </template>
   </article></main>
